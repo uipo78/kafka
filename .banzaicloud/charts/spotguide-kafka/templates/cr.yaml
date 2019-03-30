@@ -1,0 +1,31 @@
+apiVersion: banzaicloud.banzaicloud.io/v1alpha1
+kind: KafkaCluster
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+    app: "{{ template "kafka-spotguide.fullname" . }}"
+    chart: "{{ include "kafka-spotguide.chart" . }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: kafka
+spec:
+  # Add fields here
+  brokers: {{.Values.brokers.replicas}}
+  annotations: {}
+  image: "{{.Values.image.repository}}:{{.Values.image.tag}}"
+  brokerConfig: |
+    log.dirs=/kafka-logs/kafka
+    {{- .Values.brokers.config | nindent 4}}
+  listeners:
+    externalListener:
+      - type: "plaintext"
+        name: "external"
+        externalStartingPort: 19090
+        containerPort: 9094
+    internalListener:
+      - type: "plaintext"
+        name: "internal"
+        containerPort: 29092
+        usedForInnerBrokerCommunication: true
+  serviceAccount: ""
+  storageSize: "{{.Values.brokers.disk.size}}"

@@ -1,0 +1,60 @@
+name: 'Kafka Spotguide'
+description: 'Production grade Kafka on Kubernets'
+tags: ['Kafka', 'Big Data', 'Zookeeper', 'Queue']
+resources:
+  sumCpu: 8
+  sumMem: 12
+  filters: []
+  sameSize: false
+  onDemandPct: 30
+  minNodes: 3
+  maxNodes: 4
+questions:
+- type: pipeline
+  dataType: enum
+  key: kafka_version_enum
+  label: 'Kafka Version'
+  description: ''
+  default: '2.12-2.1.0'
+  required: true
+  group: Kafka
+  options:
+  - '2.12-2.1.0'
+  - '2.11.1.1.1'
+  targets:
+    - deploy_kafka.deployment.values.image.tag
+- type: pipeline
+  dataType: string
+  label: 'Number of Kafka brokers'
+  default: '3'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.brokers.replicas
+- type: pipeline
+  dataType: string
+  label: 'Persistent Volume size'
+  pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+  default: '10Gi'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.brokers.disk.size
+- type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: properties
+  label: 'Broker properties'
+  required: false
+  default: |
+    zookeeper.connect=zookeeper-cluster-client.zookeeper:2181
+    default.replication.factor=3
+    num.partitions=3
+  targets:
+   - deploy_kafka.deployment.values.brokers.config
+- type: pipeline
+  dataType: string
+  label: 'Number of Zookeeper nodes'
+  default: '3'
+  group: Zookeeper
+  targets:
+    - deploy_zk.deployment.values.cluster.size
